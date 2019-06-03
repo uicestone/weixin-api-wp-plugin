@@ -3,7 +3,7 @@
 class WXAPI_REST_Controller extends WP_REST_Controller {
 
 	public function __construct() {
-		$this->namespace = 'jddj/v1';
+		$this->namespace = 'v1';
 		$this->rest_base = 'wx';
 	}
 
