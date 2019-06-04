@@ -8,32 +8,12 @@ class WXAPI_REST_Controller extends WP_REST_Controller {
 	}
 
 	/**
-	 * Register the REST API routes.
-	 */
-	public function register_routes() {
-
-		register_rest_route( $this->namespace, $this->rest_base, array(
-			array(
-				'methods' => WP_REST_Server::CREATABLE,
-				'callback' => array( $this, 'serve' ),
-			)
-		) );
-
-		register_rest_route( $this->namespace, $this->rest_base . '/jsapi-args', array(
-			array(
-				'methods' => WP_REST_Server::READABLE,
-				'callback' => array( $this, 'getJsapiArgs' ),
-			)
-		) );
-	}
-
-	/**
 	 * Serve wechat events
 	 *
 	 * @param WP_REST_Request $request
 	 * @return WP_Error|WP_REST_Response
 	 */
-	public static function serve( $request ) {
+	public static function serve($request) {
 
 		$wx = new WeixinAPI();
 
@@ -49,12 +29,44 @@ class WXAPI_REST_Controller extends WP_REST_Controller {
 	 * @param WP_REST_Request $request
 	 * @return mixed|WP_REST_Response
 	 */
-	public static function getJsapiArgs( $request ) {
+	public static function getJsapiArgs($request) {
 		$wx = new WeixinAPI(true);
 		$url = $request->get_param('url');
 		error_log('getjsapiargeurl:' . $url);
 		$args = $wx->generate_jsapi_args($url ?: null);
 		return rest_ensure_response($args);
+	}
+
+	public static function jsCodeToSession($request) {
+		$code = $request->get_param('code');
+
+	}
+
+	/**
+	 * Register the REST API routes.
+	 */
+	public function register_routes() {
+
+		register_rest_route($this->namespace, $this->rest_base, array(
+			array(
+				'methods' => WP_REST_Server::CREATABLE,
+				'callback' => array($this, 'serve'),
+			)
+		));
+
+		register_rest_route($this->namespace, $this->rest_base . '/jsapi-args', array(
+			array(
+				'methods' => WP_REST_Server::READABLE,
+				'callback' => array($this, 'getJsapiArgs'),
+			)
+		));
+
+		register_rest_route($this->namespace, $this->rest_base . '/auth/code-to-session', array(
+			array(
+				'methods' => WP_REST_Server::READABLE,
+				'callback' => array($this, 'jsCodeToSession'),
+			)
+		));
 	}
 
 }
