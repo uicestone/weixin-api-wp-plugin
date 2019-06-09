@@ -454,6 +454,27 @@ class WeixinAPI {
 	}
 
 	/**
+	 * 微信小程序授权登录，获得会话ID
+	 */
+	function js_code_to_session($code) {
+
+		$url = 'https://api.weixin.qq.com/sns/jscode2session?';
+
+		$query_args = array(
+			'appid' => $this->app_id,
+			'secret' => $this->app_secret,
+			'grant_type' => 'authorization_code',
+			'js_code' => $code,
+		);
+
+		$url .= http_build_query($query_args);
+
+		$auth_result = $this->call($url);
+
+		return $auth_result;
+	}
+
+	/**
 	 * 统一支付接口,可接受 JSAPI/NATIVE/APP下预支付订单,返回预支付订单号。 NATIVE支付返回二维码 code_url。
 	 * @param string $order_id
 	 * @param float $total_price

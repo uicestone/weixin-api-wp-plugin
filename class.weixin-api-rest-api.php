@@ -37,9 +37,17 @@ class WXAPI_REST_Controller extends WP_REST_Controller {
 		return rest_ensure_response($args);
 	}
 
+	/**
+	 * get mini program session from code
+	 *
+	 * @param WP_REST_Request $request
+	 * @return mixed|WP_REST_Response
+	 */
 	public static function jsCodeToSession($request) {
 		$code = $request->get_param('code');
-
+		$wx = new WeixinAPI(true);
+		$result = $wx->js_code_to_session($code);
+		return rest_ensure_response($result);
 	}
 
 	/**
