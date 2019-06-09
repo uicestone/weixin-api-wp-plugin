@@ -471,6 +471,14 @@ class WeixinAPI {
 
 		$auth_result = $this->call($url);
 
+		$users = get_users(array('meta_key' => 'openid', 'meta_value' => $auth_result->openid));
+
+		if ($users) {
+			$auth_result->id = $users[0]->ID;
+			$auth_result->name = $users[0]->data->display_name;
+			$auth_result->roles = $users[0]->roles;
+		}
+
 		return $auth_result;
 	}
 
