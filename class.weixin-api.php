@@ -477,6 +477,11 @@ class WeixinAPI {
 			$auth_result->id = $users[0]->ID;
 			$auth_result->name = $users[0]->data->display_name;
 			$auth_result->roles = $users[0]->roles;
+			$manage_shop_post_id = get_user_meta($users[0]->ID, 'shop', true);
+			if ($manage_shop_post_id) {
+				$manage_shop_post = get_post($manage_shop_post_id);
+				$auth_result->manageShop = (object) array('id' => $manage_shop_post->ID, 'name' => $manage_shop_post->post_title);
+			}
 		}
 
 		return $auth_result;
