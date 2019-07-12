@@ -696,6 +696,28 @@ class WeixinAPI {
 	}
 
 	/**
+	 * 生成小程序二维码
+	 * @param $path
+	 * @param int $width
+	 */
+	function app_create_qr_code($key, $path, $width = 430) {
+		$url = 'https://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode?access_token=' . $this->get_access_token();
+
+		$post_data = array(
+			'path' => $path,
+			'width' => $width
+		);
+
+		$buffer = $this->call($url, $post_data, 'POST', 'json');
+
+		$baseurl = wp_upload_dir()['baseurl'];
+		$basedir = wp_upload_dir()['basedir'];
+		file_put_contents($basedir . '/' . $key . '.jpg', $buffer);
+
+		return $baseurl . '/' . $key . '.jpg';
+	}
+
+	/**
 	 * 删除微信公众号会话界面菜单
 	 */
 	function remove_menu() {
