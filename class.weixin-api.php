@@ -697,8 +697,10 @@ class WeixinAPI {
 
 	/**
 	 * 生成小程序二维码
-	 * @param $path
-	 * @param int $width
+	 * @param string $key 要保存的二维码文件名
+	 * @param string $path 二维码小程序路径，含参数
+	 * @param int $width 二维码宽度
+	 * @return string $url 二维码图片地址
 	 */
 	function app_create_qr_code($key, $path, $width = 430) {
 		$url = 'https://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode?access_token=' . $this->get_access_token();
