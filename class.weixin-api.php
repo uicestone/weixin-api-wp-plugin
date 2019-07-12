@@ -702,19 +702,23 @@ class WeixinAPI {
 	 * @param int $width 二维码宽度
 	 * @return string $url 二维码图片地址
 	 */
-	function app_create_qr_code($key, $path, $width = 430) {
-		$url = 'https://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode?access_token=' . $this->get_access_token();
-
-		$post_data = array(
-			'path' => $path,
-			'width' => $width
-		);
-
-		$buffer = $this->call($url, $post_data, 'POST', 'json');
-
+	function app_create_qr_code($key, $path, $width = 430, $force = false) {
 		$baseurl = wp_upload_dir()['baseurl'];
 		$basedir = wp_upload_dir()['basedir'];
-		file_put_contents($basedir . '/' . $key . '.jpg', $buffer);
+		$file_path = $basedir . '/' . $key . '.jpg';
+
+		if (!file_exists($file_path) || $force) {
+			$url = 'https://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode?access_token=' . $this->get_access_token();
+
+			$post_data = array(
+				'path' => $path,
+				'width' => $width
+			);
+
+			$buffer = $this->call($url, $post_data, 'POST', 'json');
+
+			file_put_contents($file_path, $buffer);
+		}
 
 		return $baseurl . '/' . $key . '.jpg';
 	}
