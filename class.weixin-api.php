@@ -705,7 +705,7 @@ class WeixinAPI {
 	function app_create_qr_code($key, $path, $width = 430, $force = false) {
 		$baseurl = wp_upload_dir()['baseurl'];
 		$basedir = wp_upload_dir()['basedir'];
-		$file_path = $basedir . '/' . $key . '.jpg';
+		$file_path = $basedir . '/qrcodes/' . $key . '.jpg';
 
 		if (!file_exists($file_path) || $force) {
 			$url = 'https://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode?access_token=' . $this->get_access_token();
@@ -720,7 +720,7 @@ class WeixinAPI {
 			file_put_contents($file_path, $buffer);
 		}
 
-		return $baseurl . '/' . $key . '.jpg';
+		return $baseurl . '/qrcodes/' . $key . '.jpg';
 	}
 
 	/**
