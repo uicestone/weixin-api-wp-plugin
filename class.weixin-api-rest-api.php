@@ -48,31 +48,11 @@ class WXAPI_REST_Controller extends WP_REST_Controller {
 		$wx = new WeixinAPI(true);
 		$auth_result = $wx->js_code_to_session($code);
 
-		$users = get_users(array('meta_key' => 'openid', 'meta_value' => $auth_result->openid));
-
-		if (!$users) {
-			$user_id = wp_insert_user(array(
-				'user_login' => $auth_result->openid,
-				'display_name' => '游客'
-			));
-			error_log("User {$user_id} created, openid {$auth_result->openid}.");
-			add_user_meta($user_id, 'openid', $auth_result->openid);
-			$user = get_user_by('ID', $user_id);
-		} elseif (count($users) > 1) {
-			return rest_ensure_response(new WP_Error('duplicate_openid', '重复的openid，鉴权失败', array('status' => 409)));
-		} else {
-			$user = $users[0];
+		if (is_wp_error($user = get_user_by_openid($auth_result->openid, true))) {
+			return rest_ensure_response($user);
 		}
 
-		$auth_result->user = (object) [
-			'id' => $user->ID,
-			'name' => $user->data->display_name,
-			'roles' => $user->roles,
-			'avatarUrl' => get_user_meta($user->ID, 'avatar_url', true),
-			'region' => get_user_meta($user->ID, 'region', true),
-			'gender' => get_user_meta($user->ID, 'gender', true)
-		];
-
+		$auth_result->user = $user;
 
 		return rest_ensure_response($auth_result);
 	}
@@ -84,25 +64,14 @@ class WXAPI_REST_Controller extends WP_REST_Controller {
 	 * @return mixed|WP_REST_Response
 	 */
 	public static function updateUserInfo($request) {
-		$openid = $_SERVER['HTTP_OPENID'];
 
-		if (!$openid) {
-			return rest_ensure_response(new WP_Error('invalid_openid', ['message' => '未获取openid'], array('status' => 403)));
-		}
-
-		$users = get_users(array('meta_key' => 'openid', 'meta_value' => $openid));
-
-		if (!$users) {
-			return rest_ensure_response(new WP_Error('user_not_found','openid对应的用户不存在', array('status' => 404)));
-		} elseif (count($users) > 1) {
-			return rest_ensure_response(new WP_Error('duplicate_openid', '重复的openid，鉴权失败', array('status' => 409)));
-		} else {
-			$user = $users[0];
+		if (is_wp_error($user = get_user_by_openid())) {
+			return rest_ensure_response($user);
 		}
 
 		$user_info = $request->get_json_params();
 
-		wp_update_user(['ID' => $user->ID, 'display_name' => $user_info['nickName']]);
+		wp_update_user(['ID' => $user->id, 'first_name' => $user_info['nickName'], 'display_name' => $user_info['nickName']]);
 
 		switch($user_info['gender']) {
 			case 1:
@@ -113,18 +82,11 @@ class WXAPI_REST_Controller extends WP_REST_Controller {
 				$gender = '未知';
 		}
 
-		update_user_meta($user->ID, 'avatar_url', $user_info['avatarUrl']);
-		update_user_meta($user->ID, 'gender', $gender);
-		update_user_meta($user->ID, 'region', $user_info['country'] . ' ' . $user_info['province'] . ' ' . $user_info['city']);
+		update_user_meta($user->id, 'avatar_url', $user_info['avatarUrl']);
+		update_user_meta($user->id, 'gender', $gender);
+		update_user_meta($user->id, 'region', $user_info['country'] . ' ' . $user_info['province'] . ' ' . $user_info['city']);
 
-		return rest_ensure_response([
-			'id' => $user->ID,
-			'name' => $user->data->display_name,
-			'roles' => $user->roles,
-			'avatarUrl' => get_user_meta($user->ID, 'avatar_url', true),
-			'region' => get_user_meta($user->ID, 'region', true),
-			'gender' => get_user_meta($user->ID, 'gender', true)
-		]);
+		return rest_ensure_response(get_user_by_openid());
 	}
 
 	/**
