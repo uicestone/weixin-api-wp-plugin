@@ -8,7 +8,7 @@ if (!function_exists('get_user_by_openid')) {
 		}
 
 		if (!$openid) {
-			return new WP_Error('invalid_openid', ['message' => '未获取openid'], array('status' => 403));
+			return new WP_Error('invalid_openid', '未获取openid', array('status' => 403));
 		}
 
 		$users = get_users(array('meta_key' => 'openid', 'meta_value' => $openid));
