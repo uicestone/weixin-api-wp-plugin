@@ -58,6 +58,39 @@ class WXAPI_REST_Controller extends WP_REST_Controller {
 	}
 
 	/**
+	 * web OAuth (code to openid)
+	 *
+	 * @param WP_REST_Request $request
+	 * @return mixed|WP_REST_Response
+	 */
+	public static function webOAuth($request) {
+		$code = $request->get_param('code');
+		$wx = new WeixinAPI(true);
+		$auth_result = $wx->get_oauth_token($code);
+
+		if (is_wp_error($user = get_user_by_openid($auth_result->openid, true))) {
+			return rest_ensure_response($user);
+		}
+
+		$auth_result->user = $user;
+
+		return rest_ensure_response($auth_result);
+	}
+
+	/**
+	 * get user from openid
+	 *
+	 * @param WP_REST_Request $request
+	 * @return mixed|WP_REST_Response
+	 */
+	public static function getAuthUser($request) {
+		$openid = $request->get_param('openid');
+		$user = get_user_by_openid($openid, true);
+
+		return rest_ensure_response($user);
+	}
+
+	/**
 	 * update wechat user info to wordpress user meta
 	 *
 	 * @param WP_REST_Request $request
@@ -112,6 +145,20 @@ class WXAPI_REST_Controller extends WP_REST_Controller {
 			array(
 				'methods' => WP_REST_Server::READABLE,
 				'callback' => array($this, 'jsCodeToSession'),
+			)
+		));
+
+		register_rest_route($this->namespace, $this->rest_base . '/auth', array(
+			array(
+				'methods' => WP_REST_Server::READABLE,
+				'callback' => array($this, 'webOAuth'),
+			)
+		));
+
+		register_rest_route($this->namespace, $this->rest_base . '/auth/user', array(
+			array(
+				'methods' => WP_REST_Server::READABLE,
+				'callback' => array($this, 'getAuthUser'),
 			)
 		));
 
