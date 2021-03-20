@@ -6,7 +6,9 @@ class WeixinAPI {
 		$app_id, // 开发模式 / 开发者凭据
 		$app_secret, // 同上
 		$mch_id, // 微信商户ID
-		$mch_key; // 微信商户Key
+		$mch_key, // 微信商户Key
+		$app_id_mp,
+		$app_secret_mp;
 
 	function __construct($force_mp = false) {
 		// 从WordPress配置中获取这些公众账号身份信息
@@ -15,7 +17,9 @@ class WeixinAPI {
 					 'app_secret',
 					 'mch_id',
 					 'mch_key',
-					 'token'
+					 'token',
+					 'app_id_mp',
+					 'app_secret_mp',
 				 ) as $item) {
 			if ((self::in_wx() || $force_mp) && defined(strtoupper('wx_' . $item))) {
 				$this->$item = constant(strtoupper('wx_' . $item));
@@ -257,7 +261,7 @@ class WeixinAPI {
 		$url = 'https://open.weixin.qq.com/connect/oauth2/authorize?';
 
 		$query_args = array(
-			'appid' => $this->app_id,
+			'appid' => $this->app_id_mp,
 			'redirect_uri' => is_null($redirect_uri) ? site_url($_SERVER['REQUEST_URI']) : $redirect_uri,
 			'response_type' => 'code',
 			'scope' => $scope,
@@ -378,31 +382,31 @@ class WeixinAPI {
 	 */
 	function get_oauth_token($code = null, $force = false) {
 
-		if (is_user_logged_in() && $auth_result = get_user_meta(get_current_user_id(), 'oauth_info', true)) {
-			if (json_decode($auth_result)->expires_at >= time()) {
-				return $auth_result->access_token;
-			}
-		}
+		// if (is_user_logged_in() && $auth_result = get_user_meta(get_current_user_id(), 'oauth_info', true)) {
+		// 	if (json_decode($auth_result)->expires_at >= time()) {
+		// 		return $auth_result->access_token;
+		// 	}
+		// }
 
-		if (is_null($code)) {
-			if (empty($_GET['code'])) {
-
-				// 非强制微信网页授权，跳过
-				if (!$force) {
-					return null;
-				}
-
-				header('Location: ' . $this->generate_oauth_url(site_url() . $_SERVER['REQUEST_URI']));
-				exit;
-			}
-			$code = $_GET['code'];
-		}
+		// if (is_null($code)) {
+		// 	if (empty($_GET['code'])) {
+		//
+		// 		// 非强制微信网页授权，跳过
+		// 		if (!$force) {
+		// 			return null;
+		// 		}
+		//
+		// 		header('Location: ' . $this->generate_oauth_url(site_url() . $_SERVER['REQUEST_URI']));
+		// 		exit;
+		// 	}
+		// 	$code = $_GET['code'];
+		// }
 
 		$url = 'https://api.weixin.qq.com/sns/oauth2/access_token?';
 
 		$query_args = array(
-			'appid' => $this->app_id,
-			'secret' => $this->app_secret,
+			'appid' => $this->app_id_mp,
+			'secret' => $this->app_secret_mp,
 			'code' => $code,
 			'grant_type' => 'authorization_code'
 		);
@@ -414,20 +418,20 @@ class WeixinAPI {
 			return false;
 		}
 
-		$auth_result->expires_at = $auth_result->expires_in + time();
+		// $auth_result->expires_at = $auth_result->expires_in + time();
 
-		if (is_user_logged_in()) {
-			$existing_users = get_users(['meta_key' => 'wx_openid', 'meta_value' => $auth_result->openid]);
-
-			if ($existing_users & $existing_users[0]->ID !== wp_get_current_user()->ID) {
-				exit('此微信号已经绑定到其他账号。<a href=' . site_url() . '>返回首页</a>');
-			}
-
-			update_user_meta(get_current_user_id(), 'wx_openid', $auth_result->openid);
-			update_user_meta(get_current_user_id(), 'wx_oauth_info', json_encode($auth_result));
-		} else {
-			update_option('wx_oauth_token_' . $auth_result->access_token, json_encode($auth_result));
-		}
+		// if (is_user_logged_in()) {
+		// 	$existing_users = get_users(['meta_key' => 'wx_openid', 'meta_value' => $auth_result->openid]);
+		//
+		// 	if ($existing_users & $existing_users[0]->ID !== wp_get_current_user()->ID) {
+		// 		exit('此微信号已经绑定到其他账号。<a href=' . site_url() . '>返回首页</a>');
+		// 	}
+		//
+		// 	update_user_meta(get_current_user_id(), 'wx_openid', $auth_result->openid);
+		// 	update_user_meta(get_current_user_id(), 'wx_oauth_info', json_encode($auth_result));
+		// } else {
+		// 	update_option('wx_oauth_token_' . $auth_result->access_token, json_encode($auth_result));
+		// }
 
 		return $auth_result;
 	}
