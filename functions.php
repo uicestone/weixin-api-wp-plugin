@@ -36,7 +36,8 @@ if (!function_exists('get_user_by_openid')) {
 			'roles' => $user->roles,
 			'avatarUrl' => get_user_meta($user->ID, 'avatar_url', true),
 			'region' => get_user_meta($user->ID, 'region', true),
-			'gender' => get_user_meta($user->ID, 'gender', true)
+			'gender' => get_user_meta($user->ID, 'gender', true),
+			'organization' => get_user_meta($user->ID, 'organization', true)
 		];
 
 	}
