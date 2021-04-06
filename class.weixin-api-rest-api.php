@@ -67,8 +67,8 @@ class WXAPI_REST_Controller extends WP_REST_Controller {
 		$code = $request->get_param('code');
 		$wx = new WeixinAPI(true);
 		$auth_result = $wx->get_oauth_token($code);
-
-		if (is_wp_error($user = get_user_by_openid($auth_result->openid, true))) {
+		$user_info = $auth_result->scope === 'snsapi_userinfo' ? $wx->oauth_get_user_info($auth_result) : null;
+		if (is_wp_error($user = get_user_by_openid($auth_result->openid, true, $user_info))) {
 			return rest_ensure_response($user);
 		}
 

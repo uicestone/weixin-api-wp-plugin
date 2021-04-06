@@ -326,14 +326,15 @@ class WeixinAPI {
 	 * OAuth方式获得用户信息
 	 * 注意，access token的scope必须包含snsapi_userinfo，才能调用本函数获取
 	 */
-	function oauth_get_user_info($lang = 'zh_CN') {
+	function oauth_get_user_info($auth_info = null, $lang = 'zh_CN') {
 
 		$url = 'https://api.weixin.qq.com/sns/userinfo?';
 
-		$auth_info = $this->get_oauth_info();
-
 		if (!$auth_info) {
-			return false;
+			$auth_info = $this->get_oauth_info();
+			if (!$auth_info) {
+				return false;
+			}
 		}
 
 		$query_vars = array(
