@@ -124,18 +124,6 @@ class WXAPI_REST_Controller extends WP_REST_Controller {
 	}
 
 	/**
-	 * download media
-	 *
-	 * @param WP_REST_Request $request
-	 * @return mixed|WP_REST_Response
-	 */
-	public static function getMedia($request) {
-		$wx = new WeixinAPI(true);
-		$media_id = $request->get_param('media_id');
-		var_export($wx->download_media($media_id));
-	}
-
-	/**
 	 * batch get media
 	 *
 	 * @param WP_REST_Request $request
@@ -190,13 +178,6 @@ class WXAPI_REST_Controller extends WP_REST_Controller {
 			array(
 				'methods' => WP_REST_Server::CREATABLE,
 				'callback' => array($this, 'updateUserInfo'),
-			)
-		));
-
-		register_rest_route($this->namespace, $this->rest_base . '/media/get', array(
-			array(
-				'methods' => WP_REST_Server::READABLE,
-				'callback' => array($this, 'getMedia'),
 			)
 		));
 

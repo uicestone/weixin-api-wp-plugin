@@ -860,6 +860,11 @@ class WeixinAPI {
 	}
 
 	function download_media($media_id) {
+		$api = 'https://api.weixin.qq.com/cgi-bin/media/get?access_token=' . $this->get_access_token(true) . '&media_id='.$media_id;
+		return $res = $this->call($api);
+	}
+
+	function download_jssdk_media($media_id) {
 		$api = 'https://api.weixin.qq.com/cgi-bin/media/get/jssdk?access_token=' . $this->get_access_token(true) . '&media_id='.$media_id;
 		return $res = $this->call($api);
 	}
