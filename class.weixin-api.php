@@ -140,24 +140,23 @@ class WeixinAPI {
 	 * 并缓存于站点数据库
 	 * 可以判断过期并重新获取
 	 */
-	function get_access_token() {
+	function get_access_token($is_mp = false) {
 
-		$stored = json_decode(get_option('wx_access_token'));
-
+		$stored = json_decode(get_option($is_mp?'wx_access_token_mp':'wx_access_token'));
 		if ($stored && $stored->expires_at > time()) {
 			return $stored->token;
 		}
 
 		$query_args = array(
 			'grant_type' => 'client_credential',
-			'appid' => $this->app_id,
-			'secret' => $this->app_secret
+			'appid' => $is_mp ? $this->app_id_mp : $this->app_id,
+			'secret' => $is_mp ? $this->app_secret_mp : $this->app_secret
 		);
 
 		$return = $this->call('https://api.weixin.qq.com/cgi-bin/token?' . http_build_query($query_args));
 
 		if ($return->access_token) {
-			update_option('wx_access_token', json_encode(array('token' => $return->access_token, 'expires_at' => time() + $return->expires_in - 60)));
+			update_option($is_mp?'wx_access_token_mp':'wx_access_token', json_encode(array('token' => $return->access_token, 'expires_at' => time() + $return->expires_in - 60)));
 			return $return->access_token;
 		}
 
@@ -532,7 +531,7 @@ class WeixinAPI {
 		$timestamp = time();
 
 		return [
-			'appId' => $this->app_id,
+			'appId' => $this->app_id_mp,
 			'timestamp' => (string)$timestamp,
 			'nonceStr' => $nonce_str,
 			'signature' => $this->generate_jsapi_sign($nonce_str, $timestamp, $url)
@@ -562,7 +561,7 @@ class WeixinAPI {
 	function get_jsapi_ticket() {
 		$jsapi_ticket = get_option('wx_jsapi_ticket');
 		if (!$jsapi_ticket || $jsapi_ticket->expires_at < time()) {
-			$access_token = $this->get_access_token();
+			$access_token = $this->get_access_token(true);
 			$jsapi_ticket = $this->call('https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=' . $access_token . '&type=jsapi');
 			$jsapi_ticket->expires_at = time() + $jsapi_ticket->expires_in;
 			update_option('wx_jsapi_ticket', $jsapi_ticket);
