@@ -859,4 +859,17 @@ class WeixinAPI {
 		return $result && isset($result->errcode) && $result->errcode === 0;
 	}
 
+	function download_media($media_id) {
+		$api = 'https://api.weixin.qq.com/cgi-bin/media/get/jssdk?access_token=' . $this->get_access_token(true) . '&media_id='.$media_id;
+		return $res = $this->call($api);
+	}
+
+	function batch_get_media($type, $count=20, $offset=0) {
+		$api = 'https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=' . $this->get_access_token(true);
+		return $res = $this->call($api, [
+			'type' => $type,
+			'offset' => $offset,
+			'count' => $count
+		],'POST','json');
+	}
 }
